@@ -2821,7 +2821,34 @@ Licensed under the MIT license.
                 if (axisy.options.inverseTransform)
                     maxy = Number.MAX_VALUE;
 
-                if (s.lines.show || s.points.show) {
+                // The following block attempts to find the series over which the 
+                // mouse pointer is hovering if there is a fill.
+                if (s.lines.fill > 0 && s.stack)
+                {
+                  // Show the series under which the pointer is hovering.
+                  for (j = 0; j < points.length; j += ps) {
+                    var ax = points[j], ay = points[j + 1];
+                    var bx = points[j + ps], by = points[j + ps + 1];
+                    if (ax == null)
+                      continue;
+                    
+                    if (mx >= ax && (bx == null ? maxx : mx < bx))
+                    {
+                      // Calculate the area of the imaginary directed triangle formed by 
+                      // (Ax, Ay) (Bx, By) (Mx, My). If the area is negative, we are
+                      // under the line.
+                      if ((((ax*by) + (bx*my) + (mx*ay)) - ((ay*bx) + (by*mx) + (my*ax))) < 0)
+                      {
+                        // Bind to the closest x. If we are past the midway point between
+                        // A and B, use B's item.
+                        item = [i, ((mx - ax) < (bx - mx)) ? j : (j + ps)) / ps];
+                      }
+                    }
+                  }
+                }
+                
+                // Attempt to 'snap' to the closest point.
+                if (!item && s.lines.show || s.points.show) {
                     for (j = 0; j < points.length; j += ps) {
                         var x = points[j], y = points[j + 1];
                         if (x == null)
